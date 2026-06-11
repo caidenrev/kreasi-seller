@@ -10,7 +10,7 @@ export default function Footer() {
             <p className="text-sm mt-1">Portal bagi kreator untuk menjual karya digital dengan mudah.</p>
           </div>
           <div className="flex gap-6 text-sm">
-            <a href="http://localhost:3000/" className="hover:text-foreground transition-colors">Utama</a>
+            <a href={process.env.NEXT_PUBLIC_CLIENT_URL || "https://kreasi-client.vercel.app"} className="hover:text-foreground transition-colors">Utama</a>
             <Link href="/login" className="hover:text-foreground transition-colors">Masuk</Link>
             <Link href="/register" className="hover:text-foreground transition-colors">Daftar</Link>
           </div>

@@ -14,7 +14,7 @@ export default function Navbar() {
 
         <nav className="flex items-center gap-4 sm:gap-6">
           <a
-            href="http://localhost:3000/"
+            href={process.env.NEXT_PUBLIC_CLIENT_URL || "https://kreasi-client.vercel.app"}
             className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors hidden sm:block"
           >
             Kembali ke KREASI.ID
