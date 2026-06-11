@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, X } from "lucide-react";
+import { Plus, X, Loader2 } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,6 +11,10 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
+import { storage } from "@/lib/firebase";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { v4 as uuidv4 } from "uuid";
 
 const productSchema = z.object({
   title: z.string().min(3, "Judul minimal 3 karakter"),
@@ -21,7 +25,7 @@ const productSchema = z.object({
   tags: z.array(z.string()).min(1, "Minimal 1 tag"),
   price: z.coerce.number().min(0, "Harga tidak boleh negatif"),
   originalPrice: z.coerce.number().optional(),
-  thumbnail: z.string().url("URL tidak valid"),
+  thumbnail: z.string().min(1, "Thumbnail wajib diupload"),
   previewImages: z.array(z.string().url("URL tidak valid")),
   driveLink: z.string().url("URL tidak valid").includes("drive.google.com", { message: "Harus berupa link Google Drive" }),
   fileFormats: z.array(z.string()).min(1, "Pilih minimal 1 format"),
@@ -46,6 +50,8 @@ export default function ProductForm({
 }: ProductFormProps) {
   const [tagInput, setTagInput] = useState("");
   const [previewInput, setPreviewInput] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const availableFormats = ["PSD", "AI", "Figma", "Sketch", "PDF", "OTF", "TTF", "MP4", "MOV", "PNG", "JPEG", "ZIP"];
 
@@ -106,6 +112,51 @@ export default function ProductForm({
   const handleRemoveTag = (index: number) => {
     const currentTags = form.getValues("tags");
     form.setValue("tags", currentTags.filter((_, i) => i !== index), { shouldValidate: true });
+  };
+
+  const handleThumbnailSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate size (maks 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Ukuran file maksimal 2MB");
+      e.target.value = "";
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    try {
+      const fileExtension = file.name.split(".").pop();
+      const fileName = `products/thumbnails/${uuidv4()}.${fileExtension}`;
+      const storageRef = ref(storage, fileName);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setUploadProgress(Math.round(progress));
+        },
+        (error) => {
+          console.error(error);
+          toast.error("Gagal mengupload gambar");
+          setIsUploading(false);
+        },
+        async () => {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          form.setValue("thumbnail", downloadURL, { shouldValidate: true });
+          setIsUploading(false);
+          toast.success("Gambar berhasil diupload");
+        }
+      );
+    } catch (error) {
+      console.error(error);
+      toast.error("Terjadi kesalahan saat upload");
+      setIsUploading(false);
+    }
   };
 
   const handleAddPreview = () => {
@@ -169,7 +220,7 @@ export default function ProductForm({
             render={({ field }) => (
               <FormItem className="space-y-1">
                 <FormLabel className="text-muted-foreground text-xs font-semibold">KATEGORI</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger className="bg-surface-2 border-border text-foreground focus:ring-accent">
                       <SelectValue placeholder="Pilih Kategori" />
@@ -250,10 +301,42 @@ export default function ProductForm({
             name="thumbnail"
             render={({ field }) => (
               <FormItem className="space-y-1 md:col-span-2">
-                <FormLabel className="text-muted-foreground text-xs font-semibold">URL THUMBNAIL UTAMA</FormLabel>
-                <FormControl>
-                  <Input type="url" placeholder="e.g. https://images.unsplash.com/..." className="bg-surface-2 border-border text-foreground focus-visible:ring-accent" {...field} />
-                </FormControl>
+                <FormLabel className="text-muted-foreground text-xs font-semibold flex justify-between items-center">
+                  <span>THUMBNAIL UTAMA (MAKS 2MB)</span>
+                  {isUploading && <span className="text-accent text-xs">Uploading... {uploadProgress}%</span>}
+                </FormLabel>
+                <div className="flex gap-4 items-start">
+                  {field.value ? (
+                    <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-border group shrink-0">
+                      <img src={field.value} alt="Thumbnail preview" className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => form.setValue("thumbnail", "")}
+                        className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-6 h-6 text-white" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-32 h-32 rounded-lg border border-dashed border-border flex items-center justify-center bg-surface-2 shrink-0">
+                      <span className="text-xs text-muted-foreground">Belum ada</span>
+                    </div>
+                  )}
+                  <FormControl>
+                    <div className="flex-1">
+                      <Input 
+                        type="file" 
+                        accept="image/*"
+                        onChange={handleThumbnailSelect}
+                        disabled={isUploading}
+                        className="bg-surface-2 border-border text-foreground focus-visible:ring-accent cursor-pointer" 
+                      />
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Pilih gambar berukuran 16:9 untuk hasil terbaik.
+                      </p>
+                    </div>
+                  </FormControl>
+                </div>
                 <FormMessage className="text-red-400" />
               </FormItem>
             )}
@@ -414,10 +497,10 @@ export default function ProductForm({
 
         <Button
           type="submit"
-          disabled={loading}
+          disabled={loading || isUploading}
           className="w-full md:w-auto bg-accent hover:bg-accent-hover text-black font-bold px-8 py-6 rounded-lg text-sm transition-colors mt-8"
         >
-          {loading ? "Memproses..." : submitButtonText}
+          {loading ? "Memproses..." : (isUploading ? "Mengupload..." : submitButtonText)}
         </Button>
       </form>
     </Form>

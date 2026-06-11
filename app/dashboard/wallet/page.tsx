@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { auth, db } from "@/lib/firebase";
-import { collection, query, where, getDocs, orderBy, limit, doc } from "firebase/firestore";
+import { collection, query, where, getDocs, getDoc, orderBy, limit, doc } from "firebase/firestore";
 import { Wallet, ArrowDownToLine, TrendingUp, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -25,9 +25,9 @@ export default function WalletPage() {
       try {
         // Fetch seller balance
         const sellerRef = doc(db, "sellers", user.uid);
-        const sellerSnap = await getDocs(query(collection(db, "sellers"), where("id", "==", user.uid)));
-        if (!sellerSnap.empty) {
-          setSeller(sellerSnap.docs[0].data());
+        const sellerSnap = await getDoc(sellerRef);
+        if (sellerSnap.exists()) {
+          setSeller(sellerSnap.data());
         }
 
         // Fetch transactions

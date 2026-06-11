@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { auth, db } from "@/lib/firebase";
-import { collection, query, where, getDocs, doc, getDoc, addDoc, serverTimestamp, orderBy } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, getDoc, addDoc, updateDoc, serverTimestamp, orderBy } from "firebase/firestore";
 import { ArrowLeft, Clock, CheckCircle2, XCircle } from "lucide-react";
 import Link from "next/link";
 
@@ -87,6 +87,13 @@ export default function WithdrawalPage() {
 
     try {
       const withdrawalsRef = collection(db, "withdrawals");
+      // Ambil saldo terbaru sebelum memotong
+      const sellerRef = doc(db, "sellers", user.uid);
+      const currentSellerSnap = await getDoc(sellerRef);
+      const currentBalance = currentSellerSnap.data()?.walletBalance || 0;
+      const newBalance = currentBalance - Number(amount);
+
+      // 1. Catat ke tabel withdrawals
       await addDoc(withdrawalsRef, {
         sellerId: user.uid,
         sellerName: seller.displayName || "Seller",
@@ -103,11 +110,22 @@ export default function WithdrawalPage() {
         requestedAt: serverTimestamp(),
       });
 
-      // Deduct balance locally for instantaneous visual update if wanted,
-      // but the Cloud Function handles the debit when "completed".
-      // To prevent double withdrawal: we can either lock the balance or subtract it immediately.
-      // Under our PRD: "Firebase Function: debit wallet seller: walletBalance -= amount when completed".
-      // So the balance is debited once processed by admin.
+      // 2. Potong walletBalance seller
+      const { increment } = await import("firebase/firestore");
+      await updateDoc(sellerRef, {
+        walletBalance: increment(-Number(amount)),
+      });
+
+      // 3. Catat di wallet_transactions sebagai debit
+      await addDoc(collection(db, "wallet_transactions"), {
+        sellerId: user.uid,
+        orderId: "", // kosong karena ini penarikan
+        type: "debit",
+        amount: Number(amount),
+        description: "Penarikan Dana (Withdrawal)",
+        balanceAfter: newBalance,
+        createdAt: serverTimestamp(),
+      });
       
       setSuccess(true);
       setAmount(0);

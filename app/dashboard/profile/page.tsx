@@ -1,8 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { auth, db } from "@/lib/firebase";
+import { auth, db, storage } from "@/lib/firebase";
 import { doc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { toast } from "sonner";
+import { v4 as uuidv4 } from "uuid";
+import { X } from "lucide-react";
 
 export default function ProfilePage() {
   const [displayName, setDisplayName] = useState("");
@@ -17,6 +21,8 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -45,6 +51,50 @@ export default function ProfilePage() {
 
     fetchProfile();
   }, []);
+
+  const handleAvatarSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Ukuran file maksimal 2MB");
+      e.target.value = "";
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+    setUploadProgress(0);
+
+    try {
+      const fileExtension = file.name.split(".").pop();
+      const fileName = `sellers/avatars/${uuidv4()}.${fileExtension}`;
+      const storageRef = ref(storage, fileName);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setUploadProgress(Math.round(progress));
+        },
+        (error) => {
+          console.error(error);
+          toast.error("Gagal mengupload avatar");
+          setIsUploadingAvatar(false);
+        },
+        async () => {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          setAvatarUrl(downloadURL);
+          setIsUploadingAvatar(false);
+          toast.success("Avatar berhasil diupload");
+        }
+      );
+    } catch (error) {
+      console.error(error);
+      toast.error("Terjadi kesalahan saat upload");
+      setIsUploadingAvatar(false);
+    }
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,14 +179,38 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-1 sm:col-span-2">
-              <label className="text-xs font-semibold text-muted-foreground">URL AVATAR / FOTO PROFIL</label>
-              <input
-                type="url"
-                value={avatarUrl}
-                onChange={(e) => setAvatarUrl(e.target.value)}
-                placeholder="https://..."
-                className="w-full bg-surface-2 border border-border rounded-lg px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-accent"
-              />
+              <label className="text-xs font-semibold text-muted-foreground flex justify-between items-center">
+                <span>FOTO PROFIL (MAKS 2MB)</span>
+                {isUploadingAvatar && <span className="text-accent text-xs">Uploading... {uploadProgress}%</span>}
+              </label>
+              <div className="flex gap-4 items-center">
+                <div className="relative w-16 h-16 rounded-full overflow-hidden border border-border group shrink-0 bg-surface-2 flex items-center justify-center">
+                  {avatarUrl ? (
+                    <>
+                      <img src={avatarUrl} alt="Avatar preview" className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setAvatarUrl("")}
+                        className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-5 h-5 text-white" />
+                      </button>
+                    </>
+                  ) : (
+                    <span className="text-[10px] text-muted-foreground">Kosong</span>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarSelect}
+                    disabled={isUploadingAvatar}
+                    className="w-full bg-surface-2 border border-border rounded-lg px-4 py-2 text-sm text-foreground focus:outline-none focus:border-accent cursor-pointer file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-accent file:text-black hover:file:bg-accent-hover"
+                  />
+                  <p className="text-[10px] text-muted-foreground mt-1.5">Disarankan resolusi 1:1 (persegi).</p>
+                </div>
+              </div>
             </div>
 
             <div className="space-y-1 sm:col-span-2">
@@ -214,10 +288,10 @@ export default function ProfilePage() {
 
           <button
             type="submit"
-            disabled={saving}
+            disabled={saving || isUploadingAvatar}
             className="w-full bg-accent hover:bg-accent-hover text-black font-bold py-3 rounded-lg text-sm transition-colors mt-6 disabled:opacity-50"
           >
-            {saving ? "Menyimpan..." : "Simpan Perubahan"}
+            {saving ? "Menyimpan..." : (isUploadingAvatar ? "Mengupload..." : "Simpan Perubahan")}
           </button>
         </div>
       </form>
