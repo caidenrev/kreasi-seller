@@ -5,12 +5,16 @@ import { auth, db } from "@/lib/firebase";
 import { collection, query, where, getDocs, deleteDoc, doc, updateDoc, orderBy } from "firebase/firestore";
 import { Plus, Pencil, Trash2, Eye, EyeOff, Search, Filter } from "lucide-react";
 import Link from "next/link";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [loading, setLoading] = useState(true);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<{ id: string; title: string } | null>(null);
 
   const fetchProducts = async () => {
     const user = auth.currentUser;
@@ -45,11 +49,18 @@ export default function ProductsPage() {
     }
   };
 
-  const handleDeleteProduct = async (id: string, title: string) => {
-    if (!confirm(`Apakah Anda yakin ingin menghapus produk "${title}"?`)) return;
+  const handleDeleteProduct = (id: string, title: string) => {
+    setProductToDelete({ id, title });
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteProduct = async () => {
+    if (!productToDelete) return;
     try {
-      await deleteDoc(doc(db, "products", id));
-      setProducts(products.filter((p) => p.id !== id));
+      await deleteDoc(doc(db, "products", productToDelete.id));
+      setProducts(products.filter((p) => p.id !== productToDelete.id));
+      setShowDeleteModal(false);
+      setProductToDelete(null);
     } catch (err) {
       console.error("Error deleting product:", err);
     }
@@ -213,6 +224,26 @@ export default function ProductsPage() {
           </div>
         )}
       </div>
+
+      <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+        <DialogContent className="sm:max-w-[425px]" aria-describedby="dialog-description">
+          <DialogHeader>
+            <DialogTitle>Konfirmasi Hapus Produk</DialogTitle>
+            <DialogDescription id="dialog-description" className="py-4">
+              Apakah Anda yakin ingin menghapus produk <strong>"{productToDelete?.title}"</strong>?
+              Tindakan ini tidak dapat dibatalkan.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteModal(false)}>
+              Batal
+            </Button>
+            <Button variant="destructive" onClick={confirmDeleteProduct}>
+              Hapus Produk
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
