@@ -37,7 +37,7 @@ export default function RegisterPage() {
       // We can check username availability if we have a lookup
       // But let's simplify for direct onboarding
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      
+
       // Update profile displayName
       await updateProfile(userCredential.user, {
         displayName: displayName,
@@ -99,7 +99,7 @@ export default function RegisterPage() {
               required
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="Joko Susilo"
+              placeholder="Eka Revandi"
               className="w-full bg-surface-2 border border-border rounded-lg px-4 py-2.5 text-sm text-foreground placeholder-muted focus:outline-none focus:border-accent transition-colors"
             />
           </div>
@@ -111,7 +111,7 @@ export default function RegisterPage() {
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="jokosusilo"
+              placeholder="EkaRevandi"
               className="w-full bg-surface-2 border border-border rounded-lg px-4 py-2.5 text-sm text-foreground placeholder-muted focus:outline-none focus:border-accent transition-colors"
             />
           </div>
@@ -123,7 +123,7 @@ export default function RegisterPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="joko@email.com"
+              placeholder="Eka@email.com"
               className="w-full bg-surface-2 border border-border rounded-lg px-4 py-2.5 text-sm text-foreground placeholder-muted focus:outline-none focus:border-accent transition-colors"
             />
           </div>
