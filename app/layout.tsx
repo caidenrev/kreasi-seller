@@ -6,6 +6,11 @@ import { Toaster } from "@/components/ui/sonner";
 export const metadata: Metadata = {
   title: "Kreasi Seller Dashboard",
   description: "Kelola produk digital, pantau penjualan, dan tarik dana Anda dengan mudah.",
+  icons: {
+    icon: "/icon.png?v=2",
+    shortcut: "/icon.png?v=2",
+    apple: "/icon.png?v=2",
+  },
 };
 
 export default function RootLayout({
