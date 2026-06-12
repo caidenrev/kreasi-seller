@@ -86,3 +86,9 @@ h1, h2, h3, h4, h5, h6 {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--border);
 }
+
+/* Theme Image Toggles */
+.theme-img-light { display: block; }
+.theme-img-dark { display: none; }
+.dark .theme-img-light { display: none !important; }
+.dark .theme-img-dark { display: block !important; }
