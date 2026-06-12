@@ -83,8 +83,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <aside className="hidden md:flex flex-col w-64 bg-surface border-r border-border">
           <div className="p-6 border-b border-border">
             <Link href="/dashboard" className="block">
-              <img src="/logo-dark-mode.png" alt="KREASI.ID" className="h-8 dark:hidden" />
-              <img src="/logo-light-mode.png" alt="KREASI.ID" className="h-8 hidden dark:block" />
+              <img src="/logo-light-mode.png" alt="KREASI.ID" className="h-8 dark:hidden" />
+              <img src="/logo-dark-mode.png" alt="KREASI.ID" className="h-8 hidden dark:block" />
             </Link>
           </div>
 
@@ -129,8 +129,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             >
               <div className="p-6 border-b border-border flex justify-between items-center">
                 <span className="block">
-                  <img src="/logo-dark-mode.png" alt="KREASI.ID" className="h-8 dark:hidden" />
-                  <img src="/logo-light-mode.png" alt="KREASI.ID" className="h-8 hidden dark:block" />
+                  <img src="/logo-light-mode.png" alt="KREASI.ID" className="h-8 dark:hidden" />
+                  <img src="/logo-dark-mode.png" alt="KREASI.ID" className="h-8 hidden dark:block" />
                 </span>
                 <button onClick={() => setSidebarOpen(false)}>
                   <X className="w-5 h-5 text-muted-foreground hover:text-foreground" />
