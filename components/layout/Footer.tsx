@@ -7,8 +7,8 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start">
-              <img src="/logo-light-mode.png" alt="KREASI.ID" className="h-8 dark:hidden" />
-              <img src="/logo-dark-mode.png" alt="KREASI.ID" className="h-8 hidden dark:block" />
+              <img src="/logo-dark-mode.png" alt="KREASI.ID" className="h-8 dark:hidden" />
+              <img src="/logo-light-mode.png" alt="KREASI.ID" className="h-8 hidden dark:block" />
             </div>
             <p className="text-sm mt-1">Portal bagi kreator untuk menjual karya digital dengan mudah.</p>
           </div>
