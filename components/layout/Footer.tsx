@@ -6,7 +6,10 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-center md:text-left">
-            <h3 className="font-bold text-lg text-foreground tracking-tight">KREASI<span className="text-accent">.SELLER</span></h3>
+            <div className="flex items-center justify-center md:justify-start">
+              <img src="/logo-light-mode.png" alt="KREASI.ID" className="h-8 dark:hidden" />
+              <img src="/logo-dark-mode.png" alt="KREASI.ID" className="h-8 hidden dark:block" />
+            </div>
             <p className="text-sm mt-1">Portal bagi kreator untuk menjual karya digital dengan mudah.</p>
           </div>
           <div className="flex gap-6 text-sm">

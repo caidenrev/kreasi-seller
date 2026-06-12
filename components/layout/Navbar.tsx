@@ -8,8 +8,9 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-40 w-full bg-background/60 backdrop-blur-xl border-b border-border/50 shadow-lg">
       <div className="mx-auto max-w-7xl h-16 flex items-center justify-between px-6">
-        <Link href="/" className="text-xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
-          <span>KREASI<span className="text-accent">.SELLER</span></span>
+        <Link href="/" className="flex items-center">
+          <img src="/logo-light-mode.png" alt="KREASI.ID" className="h-8 dark:hidden" />
+          <img src="/logo-dark-mode.png" alt="KREASI.ID" className="h-8 hidden dark:block" />
         </Link>
 
         <nav className="flex items-center gap-4 sm:gap-6">
