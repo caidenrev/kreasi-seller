@@ -127,7 +127,7 @@ export default function VouchersPage() {
 
     try {
       const expiresAtDate = new Date(values.expiresAt);
-      
+
       await addDoc(collection(db, "vouchers"), {
         code: values.code,
         sellerId,
@@ -159,7 +159,6 @@ export default function VouchersPage() {
       toast.error("Gagal menghapus voucher.");
     }
   };
-
   const formatIDR = (num: number) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
