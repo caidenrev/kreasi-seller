@@ -18,6 +18,7 @@ import {
   LogOut,
   Menu,
   X,
+  Ticket,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -61,6 +62,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
     { name: "Produk Saya", href: "/dashboard/products", icon: Package },
     { name: "Pesanan Masuk", href: "/dashboard/orders", icon: ShoppingBag },
+    { name: "Voucher Diskon", href: "/dashboard/vouchers", icon: Ticket },
     { name: "Wallet & Saldo", href: "/dashboard/wallet", icon: Wallet },
     { name: "Penarikan Dana", href: "/dashboard/withdrawal", icon: ArrowDownToLine },
     { name: "Profil Seller", href: "/dashboard/profile", icon: User },
