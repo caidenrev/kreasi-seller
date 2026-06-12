@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { storage } from "@/lib/firebase";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { v4 as uuidv4 } from "uuid";
+import imageCompression from "browser-image-compression";
 
 const productSchema = z.object({
   title: z.string().min(3, "Judul minimal 3 karakter"),
@@ -118,21 +119,22 @@ export default function ProductForm({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate size (maks 2MB)
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("Ukuran file maksimal 2MB");
-      e.target.value = "";
-      return;
-    }
-
+    // No size limit validation since we are compressing it anyway
     setIsUploading(true);
     setUploadProgress(0);
 
     try {
-      const fileExtension = file.name.split(".").pop();
+      const options = {
+        maxSizeMB: 1, // Max 1MB for thumbnails
+        maxWidthOrHeight: 1920, // Enough for 1080p
+        useWebWorker: true,
+      };
+      
+      const compressedFile = await imageCompression(file, options);
+      const fileExtension = compressedFile.name.split(".").pop() || "jpg";
       const fileName = `products/thumbnails/${uuidv4()}.${fileExtension}`;
       const storageRef = ref(storage, fileName);
-      const uploadTask = uploadBytesResumable(storageRef, file);
+      const uploadTask = uploadBytesResumable(storageRef, compressedFile);
 
       uploadTask.on(
         "state_changed",
@@ -153,8 +155,8 @@ export default function ProductForm({
         }
       );
     } catch (error) {
-      console.error(error);
-      toast.error("Terjadi kesalahan saat upload");
+      console.error("Error compression/upload:", error);
+      toast.error("Terjadi kesalahan saat memproses gambar");
       setIsUploading(false);
     }
   };

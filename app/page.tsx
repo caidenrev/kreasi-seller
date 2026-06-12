@@ -48,15 +48,15 @@ export default function SellerLanding() {
           </motion.div>
           
           <motion.h1
-            className="text-4xl md:text-6xl font-extrabold tracking-tight text-foreground max-w-4xl leading-tight flex items-center justify-center flex-wrap gap-x-4 gap-y-2"
+            className="text-4xl md:text-6xl font-extrabold tracking-tight text-foreground max-w-4xl leading-tight flex flex-col items-center justify-center gap-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            Jualan Produk Digital Tanpa Ribet dengan
-            <span className="inline-flex items-center align-middle">
-              <img src="/logo-light-mode.png" alt="KREASI.ID" className="h-[1.2em] theme-img-light" />
-              <img src="/logo-dark-mode.png" alt="KREASI.ID" className="h-[1.2em] theme-img-dark" />
+            <span>Jualan Produk Digital Tanpa Ribet dengan</span>
+            <span className="inline-flex items-center">
+              <img src="/logo-light-mode.png" alt="KREASI.ID" className="h-20 md:h-28 theme-img-light" />
+              <img src="/logo-dark-mode.png" alt="KREASI.ID" className="h-20 md:h-28 theme-img-dark" />
             </span>
           </motion.h1>
           
@@ -101,13 +101,12 @@ export default function SellerLanding() {
               viewport={{ once: true, margin: "-100px" }}
               variants={itemVariants}
             >
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground flex items-center justify-center flex-wrap gap-3">
-                Kenapa Memilih
-                <span className="inline-flex items-center align-middle">
-                  <img src="/logo-light-mode.png" alt="KREASI.ID" className="h-[1.2em] theme-img-light" />
-                  <img src="/logo-dark-mode.png" alt="KREASI.ID" className="h-[1.2em] theme-img-dark" />
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground flex flex-col items-center justify-center gap-5">
+                <span>Kenapa Memilih</span>
+                <span className="inline-flex items-center">
+                  <img src="/logo-light-mode.png" alt="KREASI.ID" className="h-16 md:h-20 theme-img-light" />
+                  <img src="/logo-dark-mode.png" alt="KREASI.ID" className="h-16 md:h-20 theme-img-dark" />
                 </span>
-                ?
               </h2>
               <p className="mt-4 text-muted-foreground text-lg">Keuntungan yang tidak akan Anda temukan di platform lain.</p>
             </motion.div>

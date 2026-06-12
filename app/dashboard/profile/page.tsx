@@ -7,6 +7,7 @@ import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 import { X } from "lucide-react";
+import imageCompression from "browser-image-compression";
 
 export default function ProfilePage() {
   const [displayName, setDisplayName] = useState("");
@@ -56,20 +57,21 @@ export default function ProfilePage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("Ukuran file maksimal 2MB");
-      e.target.value = "";
-      return;
-    }
-
     setIsUploadingAvatar(true);
     setUploadProgress(0);
 
     try {
-      const fileExtension = file.name.split(".").pop();
+      const options = {
+        maxSizeMB: 0.5,
+        maxWidthOrHeight: 800,
+        useWebWorker: true,
+      };
+      
+      const compressedFile = await imageCompression(file, options);
+      const fileExtension = compressedFile.name.split(".").pop() || "jpg";
       const fileName = `sellers/avatars/${uuidv4()}.${fileExtension}`;
       const storageRef = ref(storage, fileName);
-      const uploadTask = uploadBytesResumable(storageRef, file);
+      const uploadTask = uploadBytesResumable(storageRef, compressedFile);
 
       uploadTask.on(
         "state_changed",
@@ -90,8 +92,8 @@ export default function ProfilePage() {
         }
       );
     } catch (error) {
-      console.error(error);
-      toast.error("Terjadi kesalahan saat upload");
+      console.error("Error compression/upload:", error);
+      toast.error("Terjadi kesalahan saat memproses gambar");
       setIsUploadingAvatar(false);
     }
   };
